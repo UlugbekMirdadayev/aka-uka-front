@@ -1,0 +1,165 @@
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.table th,
+.table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.table th {
+  border-top: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.table th.sortable:hover {
+  background-color: #e0e0e0;
+}
+
+.sort-icon {
+  margin-left: 5px;
+  font-size: 20px;
+  line-height: 12px;
+  opacity: 0;
+  &.visible {
+    opacity: 1;
+  }
+  &.up {
+    color: #00ac4f;
+  }
+  &.down {
+    color: #ff0004;
+  }
+}
+
+.table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.table tr.clickable:hover {
+  cursor: pointer;
+  background-color: #f0f0f0;
+}
+
+.table tr:nth-child(even) {
+  background-color: #e6e6e64d;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.pagination button {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #f0f0f0;
+}
+
+.pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pagination span {
+  font-size: 16px;
+  color: #666;
+}
+
+/* Table Loading */
+.table-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: white;
+  border-radius: 8px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.table-loading p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Pagination improvements */
+.pagination-btn {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.pagination-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pagination-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.total-count {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+/* Sort indicator */
+.sort-indicator {
+  margin-left: 8px;
+  color: #667eea;
+  font-weight: bold;
+}

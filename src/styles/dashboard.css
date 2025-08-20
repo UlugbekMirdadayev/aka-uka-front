@@ -1,0 +1,243 @@
+.page-header {
+  .input-wrapper {
+    height: 40px;
+  }
+}
+.dashboard-model-table {
+  min-height: 83% !important;
+  overflow-y: auto;
+  margin-top: 10px;
+}
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 60px;
+  padding: 40px 30px 35px 30px;
+  border-bottom: 1px solid #e6e6e6;
+
+  .stats-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-width: calc(25% - 120px);
+
+    .icon-box {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      span {
+        color: #acacac;
+        font-size: 14px;
+        font-weight: 400;
+        letter-spacing: -0.14px;
+      }
+      p {
+        color: #333;
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 100%;
+        letter-spacing: -0.32px;
+      }
+    }
+  }
+}
+.debtors-title {
+  color: #000;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.22px;
+  padding: 20px 30px;
+}
+.chart-container {
+  flex: 1;
+  margin-bottom: 40px;
+  padding: 20px;
+  min-width: 400px;
+
+  h3 {
+    color: #000;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.22px;
+  }
+  p {
+    color: #acacac;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: -0.14px;
+  }
+}
+.charts {
+  display: flex;
+  flex-wrap: wrap;
+  overflow: hidden;
+  & > div {
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  .recharts-tooltip-item {
+    padding: 0px !important;
+  }
+  .tooltip-custome {
+    position: absolute;
+    min-width: 120px;
+    transform: translateX(-50%);
+    min-height: 58px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: #000;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 10px;
+    ul li {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+
+      svg {
+        width: 24px;
+        min-width: 24px;
+        height: 14px;
+        min-height: 14px;
+        width: auto;
+      }
+      span {
+        color: #fff;
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.12px;
+        text-align: center;
+      }
+    }
+  }
+}
+
+/* Стили для кнопок управления таблицей должников */
+.debtors-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.debtors-controls .excel-export-btn {
+  background-color: #22c55e;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.debtors-controls .excel-export-btn:hover:not(:disabled) {
+  background-color: #16a34a;
+}
+
+.debtors-controls .excel-export-btn:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.debtors-controls .filter-toggle-btn {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.debtors-controls .filter-toggle-btn:hover {
+  background-color: #2563eb;
+}
+
+.debtors-title {
+  margin: 20px 0 15px 27px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+}
+
+/* Добавьте в конец файла: */
+@media (max-width: 900px) {
+  .page.row-warehouse {
+    flex-direction: column;
+    padding: 0px;
+  }
+  .page-details {
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  .page-header {
+    padding: 80px 20px 20px !important;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px !important;
+
+    .calendar-controls {
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+    }
+  }
+  .stats {
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+  }
+  .stats-card {
+    min-width: 140px;
+    max-width: 95vw;
+    width: 100%;
+    font-size: 14px;
+    padding: 12px 10px;
+  }
+  .dashboard-model-table,
+  .table {
+    overflow-x: auto;
+    width: 100%;
+    font-size: 13px;
+  }
+  .filters-container,
+  .debtors-controls {
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+  }
+  .row-form {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .form-body {
+    padding: 10px 0 !important;
+  }
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 10px;
+  }
+  .chart-container {
+    min-width: 100%;
+  }
+}

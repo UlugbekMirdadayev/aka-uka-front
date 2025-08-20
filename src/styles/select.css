@@ -1,0 +1,137 @@
+.custom-select {
+  position: relative;
+  width: 100%;
+  box-shadow: 0px 6px 58px 0px rgba(196, 203, 214, 0.1);
+}
+
+.custom-select-label {
+  margin-bottom: 10px;
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 24px;
+}
+
+.custom-select-label span {
+  color: rgba(255, 0, 0, 0.5);
+}
+
+.select-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f3f3f4;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0px 6px 58px 0px rgba(196, 203, 214, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #f3f3f4;
+}
+
+.custom-select:hover .select-header {
+  background: #fff;
+  border-color: #3f8cff;
+}
+
+.selected-value {
+  color: #000;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px;
+  &.placeholder-style {
+    color: rgba(0, 0, 0, 0.2);
+  }
+}
+
+.arrow {
+  color: #000;
+  font-size: 12px;
+  transition: transform 0.2s ease;
+}
+
+.arrow.open {
+  transform: rotate(180deg);
+}
+
+.select-options {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  box-shadow: 0px 6px 58px 0px rgba(196, 203, 214, 0.1);
+  z-index: 10;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e8e8e9;
+  border-radius: 12px;
+}
+
+.option {
+  padding: 16px 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px;
+  color: #000;
+  border: 1px solid transparent;
+  border-bottom-color: #e8e8e9;
+  border-top-color: #e8e8e9;
+  &:first-child {
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-color: transparent;
+  }
+  &:last-child {
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    border-top-color: transparent;
+  }
+  .disabled {
+    color: rgba(0, 0, 0, 0.5);
+    cursor: not-allowed;
+  }
+}
+
+.option:hover {
+  background: #fff;
+  border-color: #3f8cff;
+}
+
+.option.selected {
+  background-color: #3f8cff48;
+  color: #3f8cff;
+}
+
+.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.disabled .select-header {
+  cursor: not-allowed;
+}
+
+/* Стили для скроллбара */
+.select-options::-webkit-scrollbar {
+  width: 6px;
+}
+
+.select-options::-webkit-scrollbar-track {
+  background: #f3f3f4;
+  border-radius: 3px;
+}
+
+.select-options::-webkit-scrollbar-thumb {
+  background: #c4cbd6;
+  border-radius: 3px;
+}
+
+.select-options::-webkit-scrollbar-thumb:hover {
+  background: #a8b1c0;
+}

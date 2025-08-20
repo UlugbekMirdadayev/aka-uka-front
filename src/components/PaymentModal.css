@@ -1,0 +1,43 @@
+.payment-modal-content {
+  padding: 20px;
+}
+
+.payment-modal-fields {
+  margin-bottom: 16px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+}
+
+.payment-modal-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 700px) {
+  .payment-modal-content {
+    padding: 8px;
+  }
+  .payment-modal-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 500px) {
+  .payment-modal-content {
+    h2 {
+      font-size: 18px;
+      margin-left: 16px;
+      margin-top: 16px;
+    }
+  }
+  .payment-modal-fields {
+    padding: 6px;
+  }
+  .btn {
+    width: 100%;
+    min-width: unset !important;
+  }
+}

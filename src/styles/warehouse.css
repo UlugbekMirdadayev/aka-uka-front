@@ -1,0 +1,115 @@
+.row-warehouse {
+  display: flex;
+  min-height: 100%;
+  .page-details {
+    flex: 1;
+  }
+  .title-page {
+    color: #000;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 24px;
+    padding: 20px 40px;
+  }
+  .driwer-form {
+    position: fixed;
+    z-index: 2;
+    inset: 0;
+    border-left: 1px solid #e6e6e6;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    right: -100%;
+    opacity: 0;
+    pointer-events: none;
+    transition: 300ms ease;
+
+    .page-header {
+      position: sticky;
+      top: 0;
+      background-color: #fff;
+      z-index: 2;
+    }
+
+    &.opened {
+      right: 0%;
+      opacity: 1;
+      pointer-events: all;
+    }
+    &::after {
+      content: "";
+      inset: 0;
+      position: absolute;
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+  }
+  .form-body {
+    background-color: #fff;
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 600px;
+    position: relative;
+    z-index: 1;
+    max-height: 100dvh;
+    overflow-y: auto;
+    padding-bottom: 30px;
+    .products-list {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      padding: 0 30px;
+      flex-direction: column;
+    }
+    .row-form {
+      display: flex;
+      gap: 20px;
+      padding: 0 30px;
+      &:has(.btn) {
+        justify-content: flex-end;
+        .btn {
+          padding: 16px 40px;
+        }
+      }
+    }
+  }
+
+  .images-cell {
+    display: flex;
+    gap: 10px;
+
+    img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+    }
+  }
+  .filters-container {
+    background: #fff;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    width: 100%;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    .row-form {
+      display: flex;
+      width: 100%;
+      gap: 16px;
+    }
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .row-warehouse {
+    .form-body {
+      min-width: 0;
+      width: 100%;
+      padding: 0 0 10px !important;
+    }
+  }
+}
