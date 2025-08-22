@@ -595,11 +595,6 @@ const Warehouse = () => {
       render: (_, row) => row.createdBy?.fullName || "-",
     },
     {
-      key: "branch",
-      title: "Filial",
-      render: (_, row) => row.branch?.name || "-",
-    },
-    {
       key: "description",
       title: "Tavsif",
       render: (_, row) => row.description || "-",

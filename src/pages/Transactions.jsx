@@ -203,18 +203,12 @@ const Transactions = () => {
     {
       key: "amount",
       title: "Miqdor",
-      render: (_, row) =>
-        row.amount ? row.amount.toLocaleString() : "-",
+      render: (_, row) => (row.amount ? row.amount.toLocaleString() : "-"),
     },
     {
       key: "client",
       title: "Mijoz",
       render: (_, row) => row.client?.fullName || "-",
-    },
-    {
-      key: "branch",
-      title: "Filial",
-      render: (_, row) => row.branch?.name || "-",
     },
     {
       key: "description",
@@ -308,10 +302,6 @@ const Transactions = () => {
                 { label: "Barchasi", value: "" },
                 { label: "Kirim", value: "cash-in" },
                 { label: "Chiqim", value: "cash-out" },
-                { label: "Buyurtma", value: "order" },
-                { label: "Xizmat", value: "service" },
-                { label: "Qarz to'lovi", value: "debt-payment" },
-                { label: "Qarz yaratildi", value: "debt-created" },
               ]}
               value={filters.type}
               onChange={(v) => setFilters({ ...filters, type: v })}
@@ -338,18 +328,6 @@ const Transactions = () => {
               ]}
               value={filters.client}
               onChange={(v) => setFilters({ ...filters, client: v })}
-            />
-            <SearchSelect
-              label="Filial"
-              options={[
-                { label: "Barchasi", value: "" },
-                ...branches.map((branch) => ({
-                  label: branch.name,
-                  value: branch._id,
-                })),
-              ]}
-              value={filters.branch}
-              onChange={(v) => setFilters({ ...filters, branch: v })}
             />
             <Input
               label="Minimal miqdor"
@@ -504,19 +482,6 @@ const Transactions = () => {
               ]}
               value={watch("client")}
               onChange={(v) => setValue("client", v)}
-              disabled={loading}
-            />
-            <SearchSelect
-              label="Filial"
-              options={[
-                { label: "Tanlanmagan", value: "" },
-                ...branches.map((branch) => ({
-                  label: branch.name,
-                  value: branch._id,
-                })),
-              ]}
-              value={watch("branch")}
-              onChange={(v) => setValue("branch", v)}
               disabled={loading}
             />
           </div>

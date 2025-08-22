@@ -675,16 +675,6 @@ const Sms = () => {
         render: (_, row) => formatPhone(row.phone),
       },
       {
-        key: "visitIndex",
-        title: "Servicega tashrifi",
-        render: (_, row) => `${row.visitIndex || 0} marta`,
-      },
-      {
-        key: "is_vip",
-        title: "VIP",
-        render: (_, row) => (row.isVip ? "Ha" : "Yo'q"),
-      },
-      {
         key: "createdAt",
         title: "Yaratilgan",
         render: (_, row) => formatDate(row.createdAt),

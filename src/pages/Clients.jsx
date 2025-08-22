@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import Input from "../components/Input";
 import Table from "../components/Table";
-import SearchSelect from "../components/SearchSelect";
 import {
   X,
   Upload,
@@ -15,7 +14,6 @@ import {
 import "../styles/warehouse.css";
 import api from "../services/api";
 import { toast } from "react-toastify";
-import CarForm from "./CarForm";
 import Modal from "../components/Modal";
 import Switch from "../components/Switch";
 
@@ -88,29 +86,6 @@ const Clients = () => {
     }
   };
 
-  const fetchBranches = async () => {
-    try {
-      const res = await api.get("branches");
-      setBranches(res.data || []);
-    } catch (err) {
-      toast.error(
-        "Filiallarni yuklashda xatolik: " +
-          (err?.response?.data?.message || "Noma'lum xatolik yuz berdi")
-      );
-    }
-  };
-  const fetchCars = async () => {
-    try {
-      const res = await api.get("cars");
-      setCars(res.data || []);
-    } catch (err) {
-      toast.error(
-        "Avtomobillarni yuklashda xatolik: " +
-          (err?.response?.data?.message || "Noma'lum xatolik yuz berdi")
-      );
-    }
-  };
-
   const createClient = async (client) => {
     const res = await api.post("clients", client);
     return res.data;
@@ -128,8 +103,6 @@ const Clients = () => {
 
   useEffect(() => {
     fetchClients();
-    fetchBranches();
-    fetchCars();
   }, []);
 
   // Map frontend form to backend model
@@ -292,11 +265,6 @@ const Clients = () => {
       key: "birthday",
       title: "Tug'ilgan kuni",
       render: (v) => (v ? new Date(v).toLocaleDateString() : "-"),
-    },
-    {
-      key: "branch",
-      title: "Filial",
-      render: (_, row) => row.branch?.name || "-",
     },
 
     {
@@ -465,15 +433,6 @@ const Clients = () => {
               }
               style={{ minWidth: 160 }}
             />
-            <SearchSelect
-              label="Filial"
-              options={[
-                { label: "Barchasi", value: "" },
-                ...branches.map((i) => ({ label: i.name, value: i.name })),
-              ]}
-              value={clientFilter.branch}
-              onChange={(v) => setClientFilter((f) => ({ ...f, branch: v }))}
-            />
             <div
               style={{
                 display: "flex",
@@ -518,7 +477,6 @@ const Clients = () => {
           >
             Barcha mijozlar
           </button>
-
         </div>
 
         <Table
@@ -663,18 +621,7 @@ const Clients = () => {
             />
           </div>
           <div className="row-form">
-            <SearchSelect
-              label="Filial"
-              options={branches.map((b) => ({ label: b.name, value: b._id }))}
-              onChange={(v) => setValue("branch", v)}
-              value={watch("branch")}
-              disabled={loading}
-            />
-            <Input 
-              label="Mijoz turi" 
-              value="Oddiy" 
-              disabled={true}
-            />
+            <Input label="Mijoz turi" value="Oddiy" disabled={true} />
           </div>
           <div className="row-form">
             <Input
@@ -707,195 +654,7 @@ const Clients = () => {
               />
             </div>
           </div>
-          <>
-              <div className="row-form">
-                <label style={{ fontWeight: 500, marginBottom: 8 }}>
-                  Avtomobillari
-                </label>
-              </div>
-              {carFields.map((car, idx) => (
-                <div key={car.id} className="row-form">
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      flex: 1,
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "flex-end",
-                        gap: 8,
-                      }}
-                    >
-                      <SearchSelect
-                        label="Modeli"
-                        options={cars.map((b) => ({
-                          label: b.name,
-                          value: b._id,
-                        }))}
-                        onChange={(v) => setValue(`cars.${idx}.model`, v)}
-                        value={watch(`cars.${idx}.model`)}
-                        error={errors.cars?.[idx]?.model?.message}
-                        disabled={loading}
-                        style={{ minWidth: 120, marginTop: 10, flex: 1 }}
-                      />
-                      <button
-                        type="button"
-                        className="btn primary"
-                        onClick={() => {
-                          setCurrentCarIndex(idx);
-                          setCarModalOpen(true);
-                        }}
-                        disabled={loading}
-                        style={{
-                          height: 56,
-                          width: 56,
-                          maxWidth: 100,
-                          fontSize: 12,
-                          padding: 0,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexDirection: "column",
-                        }}
-                        title="Yangi model qo'shish"
-                      >
-                        <X as="+" size={16} />
-                        <span>Model</span>
-                      </button>
-                    </div>
-                  </div>
-                  <Input
-                    label="Davlat raqami"
-                    placeholder="Davlat raqami (AA123BBB)"
-                    {...register(`cars.${idx}.plateNumber`, {
-                      required: "Davlat raqami majburiy",
-                    })}
-                    error={errors.cars?.[idx]?.plateNumber?.message}
-                    disabled={loading}
-                    style={{ minWidth: 140, textTransform: "uppercase" }}
-                    onChange={(e) => {
-                      setValue(
-                        `cars.${idx}.plateNumber`,
-                        e.target.value.toUpperCase()
-                      );
-                    }}
-                    value={watch(`cars.${idx}.plateNumber`)}
-                  />
-                  <Input
-                    label="Kundalik km"
-                    placeholder="Kunlik km (необязательно)"
-                    type="number"
-                    step="0.01"
-                    {...register(`cars.${idx}.dailyKm`)}
-                    value={watch(`cars.${idx}.dailyKm`) || ""}
-                    onChange={(e) =>
-                      setValue(`cars.${idx}.dailyKm`, e.target.value)
-                    }
-                    style={{ minWidth: 100 }}
-                    disabled={loading}
-                  />
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    <Input
-                      label="Oylik km"
-                      placeholder="Oylik km (необязательно)"
-                      type="number"
-                      step="0.01"
-                      {...register(`cars.${idx}.monthlyKm`)}
-                      value={watch(`cars.${idx}.monthlyKm`) || ""}
-                      onChange={(e) =>
-                        setValue(`cars.${idx}.monthlyKm`, e.target.value)
-                      }
-                      style={{ minWidth: 100 }}
-                      disabled={loading}
-                    />
-                    {watch(`cars.${idx}.dailyKm`) &&
-                      (!watch(`cars.${idx}.monthlyKm`) ||
-                        watch(`cars.${idx}.monthlyKm`) === "") && (
-                        <div
-                          style={{
-                            fontSize: "12px",
-                            color: "#666",
-                            marginTop: "2px",
-                            fontStyle: "italic",
-                          }}
-                        >
-                          Avtomatik: {Number(watch(`cars.${idx}.dailyKm`)) * 30}{" "}
-                          km/oy
-                        </div>
-                      )}
-                  </div>
-                  <button
-                    type="button"
-                    className="btn secondary"
-                    onClick={() => removeCar(idx)}
-                    disabled={loading}
-                    style={{ height: 56, marginTop: "auto" }}
-                  >
-                    <Trash size={16} color="#fff" />
-                  </button>
-                </div>
-              ))}
-              <div className="row-form">
-                <button
-                  type="button"
-                  className="btn primary"
-                  style={{ width: "fit-content" }}
-                  onClick={() => appendCar({ model: "", plateNumber: "" })}
-                  disabled={loading}
-                >
-                  <X as="+" size={18} /> <span>Avto qo'shish</span>
-                </button>
-              </div>
-          </>
-          {carModalOpen && (
-            <div
-              style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(0,0,0,0.5)",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                zIndex: 1000,
-              }}
-            >
-              <div
-                style={{
-                  backgroundColor: "white",
-                  padding: "20px",
-                  borderRadius: "8px",
-                  overflowY: "auto",
-                }}
-              >
-                <CarForm
-                  onSuccess={async (createdModel) => {
-                    await fetchCars(); // Обновляем список моделей
 
-                    // Если есть текущий индекс автомобиля, устанавливаем созданную модель
-                    if (currentCarIndex !== null && createdModel) {
-                      setValue(
-                        `cars.${currentCarIndex}.model`,
-                        createdModel._id
-                      );
-                    }
-
-                    setCarModalOpen(false);
-                    setCurrentCarIndex(null); // Сбрасываем индекс
-                  }}
-                  onCancel={() => {
-                    setCarModalOpen(false);
-                    setCurrentCarIndex(null); // Сбрасываем индекс при отмене
-                  }}
-                />
-              </div>
-            </div>
-          )}
           <div className="row-form">
             <button
               type="reset"

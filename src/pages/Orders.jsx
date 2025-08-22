@@ -144,15 +144,6 @@ const OrdersPage = () => {
     }
   };
 
-  const fetchBranches = async () => {
-    try {
-      const { data } = await api.get("/branches");
-      setBranches(data);
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Filiallar yuklanmadi");
-    }
-  };
-
   const fetchProducts = async () => {
     try {
       const { data } = await api.get("/products?limit=1000");
@@ -190,7 +181,6 @@ const OrdersPage = () => {
   useEffect(() => {
     fetchOrders();
     fetchClients();
-    fetchBranches();
     fetchProducts();
     fetchBestSellingProducts();
     fetchOrderStats();
@@ -229,12 +219,9 @@ const OrdersPage = () => {
       }
 
       // Mahsulotlar bo'yicha totalAmount hisobi
-      const totalAmount = productsWatch.reduce(
-        (sum, item) => {
-          return sum + Number(item.quantity) * Number(item.price || 0);
-        },
-        0
-      );
+      const totalAmount = productsWatch.reduce((sum, item) => {
+        return sum + Number(item.quantity) * Number(item.price || 0);
+      }, 0);
 
       const paidAmount = Number(values.paidAmount) || 0;
 
@@ -355,9 +342,9 @@ const OrdersPage = () => {
       Mijoz: order?.client?.fullName || "-",
       Filial: order?.branch?.name || "-",
       "Jami summa": order?.totalAmount || 0,
-      "Foyda": order.profitAmount || 0,
+      Foyda: order.profitAmount || 0,
       "To'langan": order.paidAmount || 0,
-      "Qarz": order.debtAmount || 0,
+      Qarz: order.debtAmount || 0,
 
       "Yaratilgan sana": moment(order.createdAt).format("YYYY-MM-DD HH:mm"),
       Mahsulotlar: order.products
@@ -447,56 +434,6 @@ const OrdersPage = () => {
   // --- Динамическая видимость столбцов ---
   const allColumns = [
     {
-      key: "status",
-      title: "Holat",
-      render: (val) => {
-        const statusLabels = {
-          pending: "Kutilmoqda",
-          completed: "Bajarildi",
-          cancelled: "Bekor qilindi",
-        };
-        const colorMap = {
-          completed: "#22c55e", // green
-          cancelled: "#ef4444", // red
-          pending: "#eab308", // yellow
-        };
-        return (
-          <span
-            style={{
-              color: "#fff",
-              background: colorMap[val] || "#888",
-              borderRadius: 6,
-              padding: "2px 10px",
-              fontWeight: 600,
-              fontSize: 15,
-              display: "inline-block",
-              minWidth: 90,
-              textAlign: "center",
-            }}
-          >
-            {statusLabels[val] || "-"}
-          </span>
-        );
-      },
-    },
-    {
-      key: "client",
-      title: "Mijoz",
-      render: (_, row) => row?.client?.fullName || "-",
-    },
-    {
-      key: "car",
-      title: "Mashina",
-      render: (car) => {
-        return car?.model ? `${car?.model?.name} [${car?.plateNumber}]` : "-";
-      },
-    },
-    {
-      key: "branch",
-      title: "Filial",
-      render: (_, row) => row.branch?.name || "-",
-    },
-    {
       key: "totalAmount",
       title: "Jami summa",
       render: (val) => {
@@ -544,22 +481,7 @@ const OrdersPage = () => {
         return `${Number(val)?.toLocaleString()} so'm`;
       },
     },
-    {
-      key: "debtAmount",
-      title: "Qarz miqdori",
-      render: (val) => {
-        if (val && typeof val === "object" && val !== null) {
-          return (
-            <>
-              {Number(val.uzs)?.toLocaleString()} so'm
-              <br />
-              {Number(val.usd)?.toLocaleString()} $
-            </>
-          );
-        }
-        return `${Number(val)?.toLocaleString()} so'm`;
-      },
-    },
+
     {
       key: "products",
       title: "Mahsulotlar",
@@ -577,11 +499,6 @@ const OrdersPage = () => {
       },
     },
     {
-      key: "date_returned",
-      title: "Qarz qaytarilish sanasi",
-      render: (val) => (val ? moment(val).format("LL") : "-"),
-    },
-    {
       key: "createdAt",
       title: "Yaratilgan sana",
       render: (val, row) => (
@@ -591,11 +508,6 @@ const OrdersPage = () => {
           <span>{row?.index || "-"} - buyurtma</span>
         </div>
       ),
-    },
-    {
-      key: "updatedAt",
-      title: "Yangilangan sana",
-      render: (val) => moment(val).format("LLLL"),
     },
     {
       key: "notes",
@@ -1118,112 +1030,7 @@ const OrdersPage = () => {
                     $
                   </div>
                 </div>
-                <div
-                  style={{
-                    background: "#fff",
-                    padding: "12px",
-                    borderRadius: "8px",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                  }}
-                >
-                  <div
-                    style={{
-                      color: "#666",
-                      fontSize: "14px",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    To'langan
-                  </div>
-                  <div style={{ fontWeight: "bold", color: "#059669" }}>
-                    {Number(orderStats.totalPaid?.uzs || 0).toLocaleString()}{" "}
-                    so'm
-                    <br />
-                    {Number(orderStats.totalPaid?.usd || 0).toLocaleString()} $
-                  </div>
-                </div>
-                <div
-                  style={{
-                    background: "#fff",
-                    padding: "12px",
-                    borderRadius: "8px",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                  }}
-                >
-                  <div
-                    style={{
-                      color: "#666",
-                      fontSize: "14px",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    Qarz
-                  </div>
-                  <div style={{ fontWeight: "bold", color: "#ef4444" }}>
-                    {Number(orderStats.totalDebt?.uzs || 0).toLocaleString()}{" "}
-                    so'm
-                    <br />
-                    {Number(orderStats.totalDebt?.usd || 0).toLocaleString()} $
-                  </div>
-                </div>
-                <div
-                  style={{
-                    background: "#fff",
-                    padding: "12px",
-                    borderRadius: "8px",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                  }}
-                >
-                  <div
-                    style={{
-                      color: "#666",
-                      fontSize: "14px",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    Lola foyda
-                  </div>
-                  <div style={{ fontWeight: "bold", color: "#8b5cf6" }}>
-                    {Number(
-                      orderStats.totalProfit?.byBranch?.Lola?.uzs || 0
-                    ).toLocaleString()}
-                    so'm
-                    <br />
-                    {Number(
-                      orderStats.totalProfit?.byBranch?.Lola?.usd || 0
-                    ).toLocaleString()}
-                    $
-                  </div>
-                </div>
-                <div
-                  style={{
-                    background: "#fff",
-                    padding: "12px",
-                    borderRadius: "8px",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                  }}
-                >
-                  <div
-                    style={{
-                      color: "#666",
-                      fontSize: "14px",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    Asosiy foyda
-                  </div>
-                  <div style={{ fontWeight: "bold", color: "#8b5cf6" }}>
-                    {Number(
-                      orderStats.totalProfit?.byBranch?.Asosiy?.uzs || 0
-                    ).toLocaleString()}{" "}
-                    so'm
-                    <br />
-                    {Number(
-                      orderStats.totalProfit?.byBranch?.Asosiy?.usd || 0
-                    ).toLocaleString()}{" "}
-                    $
-                  </div>
-                </div>
+
                 <div
                   style={{
                     background: "#fff",
