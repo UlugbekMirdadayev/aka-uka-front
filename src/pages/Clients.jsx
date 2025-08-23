@@ -24,10 +24,6 @@ const Clients = () => {
   const [loading, setLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [branches, setBranches] = useState([]);
-  const [carModalOpen, setCarModalOpen] = useState(false);
-  const [currentCarIndex, setCurrentCarIndex] = useState(null); // для отслеживания индекса автомобиля при добавлении модели
-  const [cars, setCars] = useState([]);
   const [openClient, setOpenClient] = useState(false);
   const [client, setClient] = useState({});
   const [clientFilter, setClientFilter] = useState({
@@ -61,12 +57,7 @@ const Clients = () => {
     },
   });
 
-  const {
-    fields: carFields,
-    append: appendCar,
-    remove: removeCar,
-    replace: replaceCars,
-  } = useFieldArray({
+  const { replace: replaceCars } = useFieldArray({
     control,
     name: "cars",
   });

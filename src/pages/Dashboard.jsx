@@ -42,17 +42,6 @@ const Data = () => {
   );
 };
 
-const currencies = [
-  {
-    value: "UZS",
-    label: "UZB",
-  },
-  {
-    value: "USD",
-    label: "USD",
-  },
-];
-
 const Dashboard = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState({});
@@ -68,7 +57,6 @@ const Dashboard = () => {
   const [openModal, setOpenModal] = useState({ is_open: false, form: "" });
   const [tabs, setTabs] = useState("debt");
   const [bestSellingFilter, setBestSellingFilter] = useState({
-    currency: "",
     name: "",
   });
   const [selectedDebtor, setSelectedDebtor] = useState(null);
@@ -85,12 +73,10 @@ const Dashboard = () => {
     currentDebtMax: "",
     totalPaidMin: "",
     totalPaidMax: "",
-    currency: "",
     startDate: "",
     endDate: "",
     nextPaymentDue: "",
     hasLastPayment: "",
-
   });
   const [showFilters, setShowFilters] = useState(false);
 
@@ -113,15 +99,6 @@ const Dashboard = () => {
           setOpenModal({ is_open: true, form: "todayIncome" });
         },
         hide: today.format("YYYY-MM-DD") === currnetDate.format("YYYY-MM-DD"),
-        render: (value) => {
-          if (value && typeof value === "object") {
-            const parts = [];
-            if (value.uzs > 0) parts.push(`${value.uzs.toLocaleString()} so'm`);
-            if (value.usd > 0) parts.push(`${value.usd.toLocaleString()} $`);
-            return parts.length > 0 ? parts.join("\n") : "0";
-          }
-          return "0";
-        },
       },
 
       {
@@ -133,42 +110,14 @@ const Dashboard = () => {
         hide: false,
         accessor: (stats) => stats.clients?.regular?.total,
       },
-
       {
-        key: "debtors.regular.amount",
-        prefix: "so'm",
-        title: "Jami qarzlar (Oddiy)",
-        icon: <Dollar size={42} />,
-        bg: "linear-gradient(201deg, #FFE5D3 3.14%, #FFF6EF 86.04%)",
-        hide: false,
-        render: (value) => {
-          if (value && typeof value === "object") {
-            const parts = [];
-            if (value.uzs > 0) parts.push(`${value.uzs.toLocaleString()} so'm`);
-            if (value.usd > 0) parts.push(`${value.usd.toLocaleString()} $`);
-            return parts.length > 0 ? parts.join("\n") : "0";
-          }
-          return "0";
-        },
-        accessor: (stats) => stats.debtors?.regular?.amount,
-      },
-      {
-        key: "debtors.total.amount",
+        key: "debtors",
         prefix: "so'm",
         title: "Jami qarzlar",
         icon: <Dollar size={42} />,
         bg: "linear-gradient(201deg, #FFE5D3 3.14%, #FFF6EF 86.04%)",
         hide: false,
-        render: (value) => {
-          if (value && typeof value === "object") {
-            const parts = [];
-            if (value.uzs > 0) parts.push(`${value.uzs.toLocaleString()} so'm`);
-            if (value.usd > 0) parts.push(`${value.usd.toLocaleString()} $`);
-            return parts.length > 0 ? parts.join("\n") : "0";
-          }
-          return "0";
-        },
-        accessor: (stats) => stats.debtors?.total?.amount,
+        render: (debtors) => debtors?.amount,
       },
 
       {
@@ -189,18 +138,6 @@ const Dashboard = () => {
         icon: <Folder size={42} />,
         bg: "linear-gradient(201deg, #FFE5D3 3.14%, #FFF6EF 86.04%)",
         hide: false,
-        onClick: () => {
-          setOpenModal({ is_open: true, form: "productCapital" });
-        },
-        render: (value) => {
-          if (value && typeof value === "object") {
-            const parts = [];
-            if (value.uzs > 0) parts.push(`${value.uzs.toLocaleString()} so'm`);
-            if (value.usd > 0) parts.push(`${value.usd.toLocaleString()} $`);
-            return parts.length > 0 ? parts.join("\n") : "0";
-          }
-          return "0";
-        },
       },
       {
         key: "clients.new",
@@ -227,7 +164,7 @@ const Dashboard = () => {
         icon: <Pen size={42} color="#fff" />,
         bg: "linear-gradient(201deg, #E0C3FC 3.14%, #8EC5FC 86.04%)",
         hide: false,
-        accessor: (stats) => stats.debtors?.total?.count,
+        accessor: (stats) => stats.debtors?.count,
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -244,15 +181,9 @@ const Dashboard = () => {
     defaultValues: {
       client: "",
       description: "",
-      currentDebt: {
-        usd: 0,
-        uzs: 0,
-      },
+      currentDebt: 0,
       nextPayment: {
-        amount: {
-          usd: 0,
-          uzs: 0,
-        },
+        amount: 0,
         dueDate: "",
       },
     },
@@ -388,15 +319,9 @@ const Dashboard = () => {
       const formData = {
         client: editing.client?._id || "",
         description: editing.description || "",
-        currentDebt: {
-          usd: Number(editing.currentDebt?.usd) || 0,
-          uzs: Number(editing.currentDebt?.uzs) || 0,
-        },
+        currentDebt: Number(editing.currentDebt) || 0,
         nextPayment: {
-          amount: {
-            usd: Number(editing.nextPayment?.amount?.usd) || 0,
-            uzs: Number(editing.nextPayment?.amount?.uzs) || 0,
-          },
+          amount: Number(editing.nextPayment?.amount) || 0,
           dueDate: formatDateForInput(editing.nextPayment?.dueDate),
         },
       };
@@ -415,15 +340,9 @@ const Dashboard = () => {
       const formData = {
         client: "",
         description: "",
-        currentDebt: {
-          usd: 0,
-          uzs: 0,
-        },
+        currentDebt: 0,
         nextPayment: {
-          amount: {
-            usd: 0,
-            uzs: 0,
-          },
+          amount: 0,
           dueDate: "",
         },
       };
@@ -440,15 +359,9 @@ const Dashboard = () => {
       const payload = {
         client: values.client,
         description: values.description,
-        currentDebt: {
-          usd: Number(values.currentDebt.usd) || 0,
-          uzs: Number(values.currentDebt.uzs) || 0,
-        },
+        currentDebt: Number(values.currentDebt) || 0,
         nextPayment: {
-          amount: {
-            usd: Number(values.nextPayment.amount.usd) || 0,
-            uzs: Number(values.nextPayment.amount.uzs) || 0,
-          },
+          amount: Number(values.nextPayment.amount) || 0,
           dueDate: values.nextPayment.dueDate || null,
         },
       };
@@ -529,25 +442,20 @@ const Dashboard = () => {
       const excelData = filteredDebtors.map((debtor, index) => ({
         "№": index + 1,
         "Mijoz ismi": debtor?.client?.fullName || "-",
-        "Mijoz telefoni": debtor?.client?.phone || "-",
+        "Mijoz telefони": debtor?.client?.phone || "-",
         "Mijoz manzili": debtor?.client?.address || "-",
         Sabab: debtor?.description || "-",
-        "Boshlangich qarz (UZS)": debtor?.initialDebt?.uzs || 0,
-        "Boshlangich qarz (USD)": debtor?.initialDebt?.usd || 0,
-        "Joriy qarz (UZS)": debtor?.currentDebt?.uzs || 0,
-        "Joriy qarz (USD)": debtor?.currentDebt?.usd || 0,
-        "Jami to'langan (UZS)": debtor?.totalPaid?.uzs || 0,
-        "Jami to'langan (USD)": debtor?.totalPaid?.usd || 0,
+        "Boshlang'ich qarz": debtor?.initialDebt || 0,
+        "Joriy qarz": debtor?.currentDebt || 0,
+        "Jami to'langan": debtor?.totalPaid || 0,
         "Oxirgi to'lov sanasi": debtor?.lastPayment?.date
           ? moment(debtor.lastPayment.date).format("DD.MM.YYYY")
           : "-",
-        "Oxirgi to'lov (UZS)": debtor?.lastPayment?.amount?.uzs || 0,
-        "Oxirgi to'lov (USD)": debtor?.lastPayment?.amount?.usd || 0,
+        "Oxirgi to'lov": debtor?.lastPayment?.amount || 0,
         "Keyingi to'lov sanasi": debtor?.nextPayment?.dueDate
           ? moment(debtor.nextPayment.dueDate).format("DD.MM.YYYY")
           : "-",
-        "Keyingi to'lov (UZS)": debtor?.nextPayment?.amount?.uzs || 0,
-        "Keyingi to'lov (USD)": debtor?.nextPayment?.amount?.usd || 0,
+        "Keyingi to'lov": debtor?.nextPayment?.amount || 0,
         "To'lov holati":
           debtor?.status === "pending"
             ? "Kutilmoqda"
@@ -580,18 +488,13 @@ const Dashboard = () => {
         { wch: 15 }, // Mijoz telefoni
         { wch: 25 }, // Mijoz manzili
         { wch: 25 }, // Sabab
-        { wch: 18 }, // Boshlang'ich qarz (UZS)
-        { wch: 18 }, // Boshlang'ich qarz (USD)
-        { wch: 15 }, // Joriy qarz (UZS)
-        { wch: 15 }, // Joriy qarz (USD)
-        { wch: 18 }, // Jami to'langan (UZS)
-        { wch: 18 }, // Jami to'langan (USD)
+        { wch: 18 }, // Boshlang'ich qarz
+        { wch: 15 }, // Joriy qarz
+        { wch: 18 }, // Jami to'langan
         { wch: 18 }, // Oxirgi to'lov sanasi
-        { wch: 15 }, // Oxirgi to'lov (UZS)
-        { wch: 15 }, // Oxirgi to'lov (USD)
+        { wch: 15 }, // Oxirgi to'lov
         { wch: 18 }, // Keyingi to'lov sanasi
-        { wch: 15 }, // Keyingi to'lov (UZS)
-        { wch: 15 }, // Keyingi to'lov (USD)
+        { wch: 15 }, // Keyingi to'lov
         { wch: 18 }, // To'lov holati
         { wch: 18 }, // Qarz yaratilgan sana
         { wch: 18 }, // Yaratilgan sana
@@ -642,12 +545,8 @@ const Dashboard = () => {
       key: "initialDebt",
       title: "Boshlang'ich qarz",
       render: (_, row) => {
-        const debt = row.initialDebt;
-        if (!debt) return "-";
-        const parts = [];
-        if (debt.uzs > 0) parts.push(`${debt.uzs.toLocaleString()} so'm`);
-        if (debt.usd > 0) parts.push(`${debt.usd.toLocaleString()} $`);
-        return parts.length > 0 ? parts.join("\n") : "0";
+        const debt = row.initialDebt || 0;
+        return `${debt.toLocaleString()} so'm`;
       },
     },
     {
@@ -660,32 +559,16 @@ const Dashboard = () => {
       key: "currentDebt",
       title: "Joriy qarz",
       render: (_, row) => {
-        const debt = row.currentDebt;
-        if (!debt) return "-";
-        const parts = [];
-        if (debt?.uzs > 0) parts.push(`${debt?.uzs?.toLocaleString()} so'm`);
-        if (debt?.usd > 0) parts.push(`${debt?.usd?.toLocaleString()} $`);
-        return (
-          <p style={{ whiteSpace: "pre" }}>
-            {parts?.length > 0 ? parts?.join("\n") : "-"}
-          </p>
-        );
+        const debt = row.currentDebt || 0;
+        return `${debt.toLocaleString()} so'm`;
       },
     },
     {
       key: "totalPaid",
       title: "Jami to'langan",
       render: (_, row) => {
-        const paid = row.totalPaid;
-        if (!paid) return "-";
-        const parts = [];
-        if (paid?.uzs > 0) parts?.push(`${paid?.uzs?.toLocaleString()} so'm`);
-        if (paid?.usd > 0) parts?.push(`${paid?.usd?.toLocaleString()} $`);
-        return (
-          <p style={{ whiteSpace: "pre" }}>
-            {parts?.length > 0 ? parts?.join("\n") : "-"}
-          </p>
-        );
+        const paid = row.totalPaid || 0;
+        return `${paid.toLocaleString()} so'm`;
       },
     },
     {
@@ -695,12 +578,8 @@ const Dashboard = () => {
         const lastPayment = row.lastPayment;
         if (!lastPayment || !lastPayment.date) return "-";
 
-        const amount = lastPayment.amount;
-        const parts = [];
-        if (amount?.uzs > 0)
-          parts.push(`${amount?.uzs?.toLocaleString()} so'm`);
-        if (amount?.usd > 0) parts.push(`${amount?.usd?.toLocaleString()} $`);
-        const amountText = parts?.length > 0 ? parts?.join("\n") : "0";
+        const amount = lastPayment.amount || 0;
+        const amountText = `${amount.toLocaleString()} so'm`;
 
         return (
           <div>
@@ -719,12 +598,8 @@ const Dashboard = () => {
         const nextPayment = row.nextPayment;
         if (!nextPayment || !nextPayment?.dueDate) return "-";
 
-        const amount = nextPayment.amount;
-        const parts = [];
-        if (amount?.uzs > 0)
-          parts.push(`${amount?.uzs?.toLocaleString()} so'm`);
-        if (amount?.usd > 0) parts.push(`${amount?.usd?.toLocaleString()} $`);
-        const amountText = parts?.length > 0 ? parts?.join("\n") : "0";
+        const amount = nextPayment.amount || 0;
+        const amountText = `${amount.toLocaleString()} so'm`;
 
         const isOverdue = moment(nextPayment?.dueDate).isBefore(
           moment(),
@@ -911,13 +786,6 @@ const Dashboard = () => {
       },
     },
     {
-      key: "currency",
-      title: "Valyuta",
-      render: (_, row) => {
-        return row.currency;
-      },
-    },
-    {
       key: "totalSold",
       title: "Jami sotilgan",
       render: (_, row) => `${row.totalSold} ${row.unit || "dona"}`,
@@ -925,14 +793,12 @@ const Dashboard = () => {
     {
       key: "costPrice",
       title: "Tannarx",
-      render: (_, row) =>
-        `${Number(row.costPrice)?.toLocaleString()} ${row.currency}`,
+      render: (_, row) => `${Number(row.costPrice)?.toLocaleString()} so'm`,
     },
     {
       key: "salePrice",
       title: "Sotish narxi",
-      render: (_, row) =>
-        `${Number(row.salePrice)?.toLocaleString()} ${row.currency}`,
+      render: (_, row) => `${Number(row.salePrice)?.toLocaleString()} so'm`,
     },
     // {
     //   key: "discount_one",
@@ -998,16 +864,14 @@ const Dashboard = () => {
                   <thead>
                     <tr>
                       <th>Sana</th>
-                      <th>UZS</th>
-                      <th>USD</th>
+                      <th>Summa</th>
                     </tr>
                   </thead>
                   <tbody>
                     {charts.weeklyIncome.map((item, index) => (
                       <tr key={index}>
                         <td>{moment(item.date).format("DD.MM.YYYY")}</td>
-                        <td>{(item.uzs || 0).toLocaleString()} so'm</td>
-                        <td>{(item.usd || 0).toLocaleString()} $</td>
+                        <td>{(item.amount || 0).toLocaleString()} so'm</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1036,28 +900,18 @@ const Dashboard = () => {
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Valyuta</th>
-                      <th>Miqdor</th>
+                      <th>Summa</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td>UZS</td>
                       <td style={{ fontWeight: "bold" }}>
-                        {(stats.productCapital.uzs || 0).toLocaleString()} so'm
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>USD</td>
-                      <td style={{ fontWeight: "bold" }}>
-                        {(stats.productCapital.usd || 0).toLocaleString()} $
+                        {(stats.productCapital || 0).toLocaleString()} so'm
                       </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-
-
             </>
           )}
         </>
@@ -1093,29 +947,15 @@ const Dashboard = () => {
         ok = false;
       }
 
-      // Фильтр по валюте (проверяем, есть ли долг в указанной валюте)
-      if (debtorFilters.currency) {
-        if (
-          debtorFilters.currency === "UZS" &&
-          (!i.currentDebt?.uzs || i.currentDebt.uzs === 0)
-        ) {
-          ok = false;
-        }
-        if (
-          debtorFilters.currency === "USD" &&
-          (!i.currentDebt?.usd || i.currentDebt.usd === 0)
-        ) {
-          ok = false;
-        }
-      }
+      // Фильтр по валюте (больше не нужен, убираем проверку)
+      // if (debtorFilters.currency) {
+      //   // Логика фильтрации по валюте убрана
+      // }
 
-      // Фильтры по сумме долга (учитываем обе валюты)
-      const totalInitialDebt =
-        (i.initialDebt?.uzs || 0) + (i.initialDebt?.usd || 0) * 12500; // примерный курс
-      const totalCurrentDebt =
-        (i.currentDebt?.uzs || 0) + (i.currentDebt?.usd || 0) * 12500;
-      const totalPaid =
-        (i.totalPaid?.uzs || 0) + (i.totalPaid?.usd || 0) * 12500;
+      // Фильтры по сумме долга (теперь простые числа)
+      const totalInitialDebt = i.initialDebt || 0;
+      const totalCurrentDebt = i.currentDebt || 0;
+      const totalPaid = i.totalPaid || 0;
 
       if (
         debtorFilters.initialDebtMin &&
@@ -1211,8 +1051,6 @@ const Dashboard = () => {
   };
   const bestSellingFiltered = bestSelling.filter((i) => {
     let ok = true;
-    if (bestSellingFilter.currency && i.currency !== bestSellingFilter.currency)
-      ok = false;
     if (
       bestSellingFilter.name &&
       !i.name?.toLowerCase().includes(bestSellingFilter.name.toLowerCase())
@@ -1279,18 +1117,6 @@ const Dashboard = () => {
             const hasCustomRender =
               item.render && typeof item.render === "function";
 
-            // Для объектов с валютами используем кастомный рендер или стандартный
-            const isMoneyObj =
-              [
-                "todayIncome",
-                "productCapital",
-                "debtors.regular.amount",
-                "debtors.total.amount",
-              ].includes(item.key) &&
-              value &&
-              typeof value === "object" &&
-              value !== null;
-
             return (
               <div
                 key={idx}
@@ -1314,20 +1140,6 @@ const Dashboard = () => {
                   >
                     {hasCustomRender ? (
                       item.render(value)
-                    ) : isMoneyObj ? (
-                      <>
-                        <NumberAnimation
-                          duration={700}
-                          value={value?.uzs || 0}
-                        />{" "}
-                        so'm
-                        <br />
-                        <NumberAnimation
-                          duration={700}
-                          value={value?.usd || 0}
-                        />{" "}
-                        $
-                      </>
                     ) : (
                       <>
                         <NumberAnimation duration={700} value={value || 0} />{" "}
@@ -1460,23 +1272,6 @@ const Dashboard = () => {
                       { value: "overdue", label: "Muddati o'tgan" },
                     ]}
                   />
-
-                  <SearchSelect
-                    label="Valyuta"
-                    placeholder="Valyuta tanlang"
-                    value={debtorFilters.currency}
-                    onChange={(value) =>
-                      setDebtorFilters({
-                        ...debtorFilters,
-                        currency: value,
-                      })
-                    }
-                    options={[
-                      { value: "", label: "Barchasi" },
-                      { value: "UZS", label: "So'm" },
-                      { value: "USD", label: "Dollar" },
-                    ]}
-                  />
                   <Input
                     label="Boshlang'ich qarz miqdori (min)"
                     placeholder="Min"
@@ -1563,7 +1358,6 @@ const Dashboard = () => {
                       setDebtorFilters({
                         client: "",
                         status: "",
-                        currency: "",
                         initialDebtMin: "",
                         initialDebtMax: "",
                         currentDebtMin: "",
@@ -1740,14 +1534,6 @@ const Dashboard = () => {
                 marginBottom: 15,
               }}
             >
-              <SearchSelect
-                label="Valyuta"
-                options={[{ label: "Barchasi", value: "" }, ...currencies]}
-                value={bestSellingFilter.currency}
-                onChange={(v) =>
-                  setBestSellingFilter((f) => ({ ...f, currency: v }))
-                }
-              />
               <Input
                 label="Nomi"
                 value={bestSellingFilter.name}
@@ -1831,49 +1617,27 @@ const Dashboard = () => {
           </div>
           <div className="row-form">
             <Input
-              label="UZS qarz miqdori"
+              label="Qarz miqdori (so'm)"
               type="number"
               placeholder="0"
               step="0.01"
-              {...register("currentDebt.uzs", {
+              {...register("currentDebt", {
                 min: { value: 0, message: "Minimal qiymat 0 bo'lishi kerak" },
               })}
-              error={errors.currentDebt?.uzs?.message}
-              disabled={loading}
-            />
-            <Input
-              label="USD qarz miqdori"
-              type="number"
-              placeholder="0"
-              step="0.01"
-              {...register("currentDebt.usd", {
-                min: { value: 0, message: "Minimal qiymat 0 bo'lishi kerak" },
-              })}
-              error={errors.currentDebt?.usd?.message}
+              error={errors.currentDebt?.message}
               disabled={loading}
             />
           </div>
           <div className="row-form">
             <Input
-              label="Keyingi UZS to'lov miqdori"
+              label="Keyingi to'lov miqdori (so'm)"
               type="number"
               placeholder="0"
               step="0.01"
-              {...register("nextPayment.amount.uzs", {
+              {...register("nextPayment.amount", {
                 min: { value: 0, message: "Minimal qiymat 0 bo'lishi kerak" },
               })}
-              error={errors.nextPayment?.amount?.uzs?.message}
-              disabled={loading}
-            />
-            <Input
-              label="Keyingi USD to'lov miqdori"
-              type="number"
-              step="0.01"
-              placeholder="0"
-              {...register("nextPayment.amount.usd", {
-                min: { value: 0, message: "Minimal qiymat 0 bo'lishi kerak" },
-              })}
-              error={errors.nextPayment?.amount?.usd?.message}
+              error={errors.nextPayment?.amount?.message}
               disabled={loading}
             />
           </div>

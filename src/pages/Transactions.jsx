@@ -6,8 +6,8 @@ import Input from "../components/Input";
 import Table from "../components/Table";
 import { X, Upload, Trash, Pen, Loader, Folder } from "../assets/icons";
 import api from "../services/api";
-import "../styles/warehouse.css";
 import SearchSelect from "../components/SearchSelect";
+import "../styles/warehouse.css";
 
 const Transactions = () => {
   const [transactions, setTransactions] = useState([]);
@@ -16,7 +16,6 @@ const Transactions = () => {
   const [loading, setLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
   const [clients, setClients] = useState([]);
-  const [branches, setBranches] = useState([]);
 
   // Состояния для фильтров
   const [filters, setFilters] = useState({
@@ -79,15 +78,6 @@ const Transactions = () => {
     }
   }, []);
 
-  const getBranches = useCallback(async () => {
-    try {
-      const { data } = await api.get("/branches");
-      setBranches(data || []);
-    } catch (err) {
-      console.log(err);
-    }
-  }, []);
-
   const getTransactions = useCallback(async () => {
     setTableLoading(true);
     try {
@@ -106,8 +96,7 @@ const Transactions = () => {
   useEffect(() => {
     getTransactions();
     getClients();
-    getBranches();
-  }, [getTransactions, getClients, getBranches]);
+  }, [getTransactions, getClients]);
 
   const onSubmit = async (values) => {
     setLoading(true);

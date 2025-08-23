@@ -1,7 +1,6 @@
 import React, {
   useState,
   useEffect,
-  useMemo,
   useRef,
   useCallback,
 } from "react";
@@ -29,7 +28,6 @@ import SearchSelect from "../components/SearchSelect";
 const paymentTypeOptions = [
   { label: "Naqd", value: "cash" },
   { label: "Karta", value: "card" },
-  { label: "Nasiya", value: "debt" },
 ];
 
 const OrdersPage = () => {
@@ -46,7 +44,6 @@ const OrdersPage = () => {
   const [showBestSelling, setShowBestSelling] = useState(false);
 
   const [clients, setClients] = useState([]);
-  const [branches, setBranches] = useState([]);
   const [productsList, setProductsList] = useState([]);
   const [bestSellingProducts, setBestSellingProducts] = useState([]);
   const [orderStats, setOrderStats] = useState(null);
@@ -64,10 +61,8 @@ const OrdersPage = () => {
   } = useForm({
     defaultValues: {
       client: null,
-      branch: "",
       products: [{ product: "", quantity: 1, price: 0 }],
       paymentType: "cash",
-      paidAmount: 0,
       notes: "",
       status: "completed",
       date_returned: null,
@@ -223,20 +218,9 @@ const OrdersPage = () => {
         return sum + Number(item.quantity) * Number(item.price || 0);
       }, 0);
 
-      const paidAmount = Number(values.paidAmount) || 0;
-
-      // debtAmount = totalAmount - paidAmount
-      const debtAmount = Math.max(totalAmount - paidAmount, 0);
-
       const submitData = {
         ...values,
         totalAmount,
-        paidAmount,
-        debtAmount,
-        date_returned:
-          values.paymentType === "debt" && debtAmount > 0
-            ? values.date_returned
-            : null,
       };
 
       if (editing) {
@@ -340,11 +324,8 @@ const OrdersPage = () => {
           ? "Bekor qilindi"
           : order?.status,
       Mijoz: order?.client?.fullName || "-",
-      Filial: order?.branch?.name || "-",
       "Jami summa": order?.totalAmount || 0,
       Foyda: order.profitAmount || 0,
-      "To'langan": order.paidAmount || 0,
-      Qarz: order.debtAmount || 0,
 
       "Yaratilgan sana": moment(order.createdAt).format("YYYY-MM-DD HH:mm"),
       Mahsulotlar: order.products
@@ -362,16 +343,8 @@ const OrdersPage = () => {
     const columnWidths = [
       { wch: 15 }, // Holat
       { wch: 20 }, // Mijoz
-      { wch: 15 }, // Filial
-      { wch: 20 }, // Buyurtma turi
-      { wch: 15 }, // Jami summa (UZS)
-      { wch: 15 }, // Jami summa (USD)
-      { wch: 15 }, // Foyda (UZS)
-      { wch: 15 }, // Foyda (USD)
-      { wch: 15 }, // To'langan (UZS)
-      { wch: 15 }, // To'langan (USD)
-      { wch: 15 }, // Qarz (UZS)
-      { wch: 15 }, // Qarz (USD)
+      { wch: 15 }, // Jami summa
+      { wch: 15 }, // Foyda
       { wch: 18 }, // Yaratilgan sana
       { wch: 40 }, // Mahsulotlar
       { wch: 20 }, // Izoh
@@ -403,7 +376,7 @@ const OrdersPage = () => {
     });
     // Set values from order
     Object.entries(order).forEach(([key, value]) => {
-      if (["car", "client", "branch"].includes(key)) {
+      if (["client"].includes(key)) {
         setValue(key, value?._id);
       } else if (key === "date_returned" && value) {
         // Ensure correct format for datetime-local input
@@ -463,22 +436,6 @@ const OrdersPage = () => {
           );
         }
         return val ? `${Number(val)?.toLocaleString()} so'm` : "-";
-      },
-    },
-    {
-      key: "paidAmount",
-      title: "To'langan summa",
-      render: (val) => {
-        if (val && typeof val === "object" && val !== null) {
-          return (
-            <>
-              {Number(val.uzs)?.toLocaleString()} so'm
-              <br />
-              {Number(val.usd)?.toLocaleString()} $
-            </>
-          );
-        }
-        return `${Number(val)?.toLocaleString()} so'm`;
       },
     },
 
@@ -609,15 +566,9 @@ const OrdersPage = () => {
   ];
 
   const defaultVisible = [
-    "status",
     "client",
-    "car",
-    "branch",
     "totalAmount",
     "profitAmount",
-    "paidAmount",
-    "debtAmount",
-    "date_returned",
     "createdAt",
     "notes",
     "actions",
@@ -646,7 +597,6 @@ const OrdersPage = () => {
   );
 
   const productsWatch = watch("products");
-  const paidAmountWatch = watch("paidAmount") || { uzs: 0, usd: 0 };
 
   // Новый расчёт totalAmount: каждая валюта только по своим товарам
   const totalAmount = productsWatch.reduce(
@@ -685,70 +635,12 @@ const OrdersPage = () => {
     { uzs: 0, usd: 0 }
   );
 
-  // debtAmount всегда считается как разница totalAmount - paidAmount по каждой валюте
-  const debtAmount = {
-    uzs: Math.max(
-      (totalAmount.uzs || 0) - (Number(paidAmountWatch?.uzs) || 0),
-      0
-    ),
-    usd: Math.max(
-      (totalAmount.usd || 0) - (Number(paidAmountWatch?.usd) || 0),
-      0
-    ),
-  };
-
-  // Очищать дату возврата, если долга нет
-  useEffect(() => {
-    if (debtAmount.uzs === 0 && debtAmount.usd === 0) {
-      setValue("date_returned", null);
-    }
-  }, [debtAmount.uzs, debtAmount.usd, setValue]);
-
-  // Автоматически устанавливать paid amount равным total amount по умолчанию
-  useEffect(() => {
-    const currentPaidUzs = Number(watch("paidAmount.uzs")) || 0;
-    const currentPaidUsd = Number(watch("paidAmount.usd")) || 0;
-
-    // Автоматически обновляем paidAmount при изменении totalAmount
-    // Только если значения отличаются, чтобы избежать бесконечного цикла
-    if ((totalAmount.uzs || 0) !== currentPaidUzs) {
-      setValue("paidAmount.uzs", totalAmount.uzs || 0, {
-        shouldValidate: true,
-      });
-    }
-
-    if ((totalAmount.usd || 0) !== currentPaidUsd) {
-      setValue("paidAmount.usd", totalAmount.usd || 0, {
-        shouldValidate: true,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [totalAmount]);
-
-  const minDateReturned = useMemo(() => {
-    const currentUTC = new Date(watch("createdAt") || Date.now());
-    const minDate = new Date(currentUTC);
-    minDate.setDate(currentUTC.getDate() + 7);
-    return minDate.toISOString().split("T")[0];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [watch("createdAt")]);
-
   // --- Фильтры как в Warehouse ---
   const [statusFilter, setStatusFilter] = useState("");
   const [clientFilter, setClientFilter] = useState("");
-  const [branchFilter, setBranchFilter] = useState("");
   const [productFilter, setProductFilter] = useState("");
   const [startDateFilter, setStartDateFilter] = useState("");
   const [endDateFilter, setEndDateFilter] = useState("");
-
-  // Обновление статистики при изменении фильтров
-  useEffect(() => {
-    fetchOrderStats({
-      branch: branchFilter || undefined,
-      startDate: startDateFilter || undefined,
-      endDate: endDateFilter || undefined,
-    });
-  }, [branchFilter, startDateFilter, endDateFilter]);
 
   // const [car, setCar] = useState("");
   const filteredOrders = orders.filter((order) => {
@@ -756,7 +648,6 @@ const OrdersPage = () => {
 
     if (statusFilter && order?.status !== statusFilter) ok = false;
     if (clientFilter && order?.client?._id !== clientFilter) ok = false;
-    if (branchFilter && order?.branch?._id !== branchFilter) ok = false;
     if (
       productFilter &&
       !order.products.find((pro) =>
@@ -879,16 +770,6 @@ const OrdersPage = () => {
                 ]}
                 value={clientFilter}
                 onChange={setClientFilter}
-                style={{ minWidth: 140 }}
-              />
-              <SearchSelect
-                label="Filial"
-                options={[
-                  { label: "Barchasi", value: "" },
-                  ...branches.map((b) => ({ label: b?.name, value: b._id })),
-                ]}
-                value={branchFilter}
-                onChange={setBranchFilter}
                 style={{ minWidth: 140 }}
               />
               <Input
@@ -1234,7 +1115,6 @@ const OrdersPage = () => {
             <button
               onClick={() => {
                 reset();
-                setValue("branch", branches[0]?._id || "");
                 setEditing(null);
                 setOpened("new_order");
               }}
@@ -1334,71 +1214,7 @@ const OrdersPage = () => {
                 />
               )}
             />
-            <Controller
-              control={control}
-              name="branch"
-              rules={{ required: "Filial majburiy" }}
-              render={({ field }) => (
-                <SearchSelect
-                  label="Filial"
-                  options={branches.map((branch) => ({
-                    label: branch?.name,
-                    value: branch?._id,
-                  }))}
-                  value={field.value}
-                  onChange={field.onChange}
-                  error={errors.branch?.message}
-                  required
-                  disabled={loading}
-                />
-              )}
-            />
           </div>
-          {!watch("client") ? null : (
-            <div className="row-form">
-              <Controller
-                control={control}
-                name="car"
-                render={({ field }) => (
-                  <SearchSelect
-                    label="Mashina"
-                    options={(() => {
-                      const client = clients.find(
-                        ({ _id }) => _id === watch("client")
-                      );
-                      if (
-                        !client ||
-                        !Array.isArray(client.cars) ||
-                        client.cars.length === 0
-                      ) {
-                        return [
-                          {
-                            label: "Mijozda mashina yo'q",
-                            value: "",
-                            disabled: true,
-                          },
-                        ];
-                      }
-                      return client?.cars.map((car) => {
-                        return {
-                          label: `${car?.model?.name} [${car?.plateNumber}]`,
-                          value: car?._id,
-                        };
-                      });
-                    })()}
-                    value={field.value}
-                    onChange={field.onChange}
-                    error={errors.status?.message}
-                    required={
-                      clients.find(({ _id }) => _id === watch("client"))?.cars
-                        ?.length > 0
-                    }
-                    disabled={loading}
-                  />
-                )}
-              />
-            </div>
-          )}
           <div className="products-list">
             <div className="products-header">
               <h3>Mahsulotlar</h3>
@@ -1577,31 +1393,7 @@ const OrdersPage = () => {
                   label="To'lov turi"
                   options={paymentTypeOptions}
                   value={field.value}
-                  onChange={(v) => {
-                    // Проверяем, есть ли долг при выборе других типов оплаты
-                    const currentDebtUzs = Math.max(
-                      (totalAmount.uzs || 0) -
-                        (Number(paidAmountWatch?.uzs) || 0),
-                      0
-                    );
-                    const currentDebtUsd = Math.max(
-                      (totalAmount.usd || 0) -
-                        (Number(paidAmountWatch?.usd) || 0),
-                      0
-                    );
-
-                    if (
-                      v !== "debt" &&
-                      (currentDebtUzs > 0 || currentDebtUsd > 0)
-                    ) {
-                      toast.info(
-                        "To'liq summa to'lanmagan. Nasiya usulini tanlang yoki to'langan summani to'liq kiriting"
-                      );
-                      return;
-                    }
-
-                    field.onChange(v);
-                  }}
+                  onChange={field.onChange}
                   error={errors.paymentType?.message}
                   required
                   disabled={loading}
@@ -1672,120 +1464,6 @@ const OrdersPage = () => {
             </div>
           )}
 
-          <div className="row-form">
-            <div style={{ display: "flex", gap: 12, width: "100%" }}>
-              <Controller
-                control={control}
-                name="paidAmount.uzs"
-                rules={{
-                  min: { value: 0, message: "0 dan kam bo'lmasligi kerak" },
-                  max: {
-                    value: totalAmount.uzs,
-                    message: `Maksimal summa: ${totalAmount.uzs?.toLocaleString()} so'm`,
-                  },
-                }}
-                render={({ field }) => (
-                  <Input
-                    label="To'langan summa UZS"
-                    type="number"
-                    placeholder={`Maksimal: ${totalAmount.uzs?.toLocaleString()} so'm`}
-                    {...field}
-                    value={field.value || ""}
-                    onChange={(e) => {
-                      let val = e.target.value;
-                      if (val === "") {
-                        field.onChange(0);
-                        return;
-                      }
-                      val = val.replace(/[^\d]/g, "");
-                      const numVal = Number(val);
-                      if (numVal > (totalAmount.uzs || 0)) {
-                        field.onChange(totalAmount.uzs || 0);
-                      } else {
-                        field.onChange(numVal);
-                      }
-                    }}
-                    error={errors.paidAmount?.uzs?.message}
-                    disabled={loading}
-                  />
-                )}
-              />
-              <Controller
-                control={control}
-                name="paidAmount.usd"
-                rules={{
-                  min: { value: 0, message: "0 dan kam bo'lmasligi kerak" },
-                  max: {
-                    value: totalAmount.usd,
-                    message: `Maksimal summa: ${totalAmount.usd?.toLocaleString()} $`,
-                  },
-                }}
-                render={({ field }) => (
-                  <Input
-                    label="To'langan summa USD"
-                    type="number"
-                    placeholder={`Maksimal: ${totalAmount.usd?.toLocaleString()} $`}
-                    {...field}
-                    value={field.value || ""}
-                    onChange={(e) => {
-                      let val = e.target.value;
-                      if (val === "") {
-                        field.onChange(0);
-                        return;
-                      }
-                      val = val.replace(/[^\d.]/g, "");
-                      const numVal = Number(val);
-                      if (numVal > (totalAmount.usd || 0)) {
-                        field.onChange(totalAmount.usd || 0);
-                      } else {
-                        field.onChange(numVal);
-                      }
-                    }}
-                    error={errors.paidAmount?.usd?.message}
-                    disabled={loading}
-                  />
-                )}
-              />
-            </div>
-          </div>
-          {(debtAmount.uzs > 0 ||
-            debtAmount.usd > 0 ||
-            watch("paymentType") == "debt") && (
-            <div className="row-form">
-              <Input
-                label="Qarz miqdori (UZS)"
-                value={`${Number(debtAmount.uzs || 0).toLocaleString()} so'm`}
-                readOnly
-                disabled
-              />
-              <Input
-                label="Qarz miqdori (USD)"
-                value={`${Number(debtAmount.usd || 0).toLocaleString()} $`}
-                readOnly
-                disabled
-              />
-              <Input
-                label="Qarz qaytarilish sanasi"
-                type="datetime-local"
-                min={minDateReturned}
-                {...register("date_returned", {
-                  required:
-                    debtAmount.uzs > 0 || debtAmount.usd > 0
-                      ? "Qarz uchun muddat majburiy"
-                      : false,
-                  validate: (value) => {
-                    if ((debtAmount.uzs > 0 || debtAmount.usd > 0) && !value)
-                      return "Qarz uchun muddat majburiy";
-                    if (value && value < minDateReturned)
-                      return `Sanani ${minDateReturned} dan keyin tanlang`;
-                    return true;
-                  },
-                })}
-                error={errors.date_returned?.message}
-                disabled={loading}
-              />
-            </div>
-          )}
           <div className="row-form">
             <Input
               label="Izoh"
@@ -2191,42 +1869,6 @@ const OrderReceiptContent = React.forwardRef(({ order }, ref) => {
           <span>USD:</span>
           <span>{(order?.totalAmount?.usd || 0).toLocaleString()} $</span>
         </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontWeight: "bold",
-            fontSize: "15px",
-            marginTop: "8px",
-          }}
-        >
-          <span>To'langan:</span>
-          <span>
-            {(order?.paidAmount?.uzs || 0).toLocaleString()} so'm /{" "}
-            {(order?.paidAmount?.usd || 0).toLocaleString()} $
-          </span>
-        </div>
-        {order?.debtAmount?.uzs || order?.debtAmount?.usd ? (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              fontWeight: "bold",
-              fontSize: "15px",
-              marginTop: "8px",
-            }}
-          >
-            <span>Qarz:</span>
-            <span>
-              {order?.debtAmount?.uzs
-                ? `${(order?.debtAmount?.uzs || 0).toLocaleString()} so'm `
-                : null}
-              {order?.debtAmount?.usd
-                ? `${(order?.debtAmount?.usd || 0).toLocaleString()} $`
-                : null}
-            </span>
-          </div>
-        ) : null}
       </div>
       {/* Разделитель */}
       <div
@@ -2236,13 +1878,7 @@ const OrderReceiptContent = React.forwardRef(({ order }, ref) => {
           width: "100%",
         }}
       ></div>
-      {/* Izoh va qaytarilish sanasi */}
-      {order?.date_returned && (
-        <div style={{ marginBottom: "8px", fontSize: "15px" }}>
-          <strong>Qarz qaytarilish sanasi:</strong>{" "}
-          {moment(order.date_returned).format("DD.MM.YYYY HH:mm")}
-        </div>
-      )}
+      {/* Izoh */}
       {order?.notes && (
         <div style={{ marginBottom: "8px", fontSize: "15px" }}>
           <strong>Izoh:</strong> {order.notes}

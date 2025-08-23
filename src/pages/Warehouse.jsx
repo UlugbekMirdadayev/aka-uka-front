@@ -6,12 +6,8 @@ import Input from "../components/Input";
 import { useForm } from "react-hook-form";
 import api from "../services/api";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
-// import moment from "moment/min/moment-with-locales";
 import Switch from "../components/Switch";
 import SearchSelect from "../components/SearchSelect";
-import Zoom from "react-medium-image-zoom";
-import "react-medium-image-zoom/dist/styles.css";
 
 // Debounce hook
 const useDebounce = (value, delay) => {
@@ -39,19 +35,10 @@ const Warehouse = () => {
   const [tableLoading, setTableLoading] = useState(false);
   const [editId, setEditId] = useState(null);
   // const [editBatchId, setEditBatchId] = useState(null);
-  const [openFilter, setOpenFilter] = useState(false);
   const [openedColumns, setOpenedColumns] = useState(false);
-  const { user } = useSelector(({ user }) => user);
   // Состояния для фильтров
   const [filters, setFilters] = useState({
     name: "",
-    minCostPrice: "",
-    maxCostPrice: "",
-    minSalePrice: "",
-    maxSalePrice: "",
-    minQuantity: "",
-    maxQuantity: "",
-    unit: "",
     currency: "",
     isAvailable: "",
   });
@@ -103,63 +90,14 @@ const Warehouse = () => {
   // Функция для фильтрации продуктов только на фронте (кроме имени)
   const getFilteredProducts = useCallback(() => {
     return products.filter((product) => {
-      // Фильтр по имени убираем - он работает на бэкенде
-
-      // Фильтры по ценам
-      if (
-        filters.minCostPrice &&
-        Number(product.costPrice) < Number(filters.minCostPrice)
-      ) {
-        return false;
-      }
-      if (
-        filters.maxCostPrice &&
-        Number(product.costPrice) > Number(filters.maxCostPrice)
-      ) {
-        return false;
-      }
-      if (
-        filters.minSalePrice &&
-        Number(product.salePrice) < Number(filters.minSalePrice)
-      ) {
-        return false;
-      }
-      if (
-        filters.maxSalePrice &&
-        Number(product.salePrice) > Number(filters.maxSalePrice)
-      ) {
-        return false;
-      }
-      // Фильтры по количеству
-      if (
-        filters.minQuantity &&
-        Number(product.quantity) < Number(filters.minQuantity)
-      ) {
-        return false;
-      }
-      if (
-        filters.maxQuantity &&
-        Number(product.quantity) > Number(filters.maxQuantity)
-      ) {
-        return false;
-      }
-
-      // Фильтр по единице измерения
-      if (filters.unit && product.unit !== filters.unit) {
-        return false;
-      }
-
-      // Фильтр по валюте
-      if (filters.currency && product.currency !== filters.currency) {
-        return false;
-      }
-
-      // Фильтр по доступности
       if (filters.isAvailable !== "") {
         const isAvailable = filters.isAvailable === "true";
         if (product.isAvailable !== isAvailable) {
           return false;
         }
+      }
+      if (filters.unit && product.unit !== filters.unit) {
+        return false;
       }
 
       return true;
@@ -267,89 +205,15 @@ const Warehouse = () => {
     fetchProducts(1, limit, debouncedNameFilter);
   }, [debouncedNameFilter, fetchProducts, limit, filters.name]);
 
-  const buildProductFormData = (data, isUpdate = false) => {
-    const formData = new FormData();
-    formData.append("name", data.name);
-    formData.append("costPrice", data.costPrice);
-    formData.append("salePrice", data.salePrice);
-    formData.append("quantity", data.quantity);
-    formData.append("minQuantity", data.minQuantity);
-    formData.append("unit", data.unit);
-    formData.append("description", data.description || "");
-    formData.append("isAvailable", data.isAvailable ? "true" : "false");
-
-    if (isUpdate) {
-      // Yangilanish uchun
-      const newFiles = [];
-      const oldImages = [];
-
-      (data.images || []).forEach((img) => {
-        if (img instanceof File) {
-          // Yangi fayllar
-          newFiles.push(img);
-        } else if (typeof img === "string") {
-          // String - bu URL yoki file_id bo'lishi mumkin
-          if (img.startsWith("http")) {
-            // URL format
-            oldImages.push({ fileURL: img, file_id: "" });
-          } else {
-            // file_id format
-            oldImages.push({ file_id: img, fileURL: "" });
-          }
-        } else if (img && typeof img === "object") {
-          // Obyekt format - backend format bilan mos
-          const oldImg = {
-            fileURL: img.fileURL || img.url || "",
-            file_id: img.file_id || "",
-          };
-          // fileURL yoki file_id mavjud bo'lsa qo'shamiz
-          if (oldImg.fileURL || oldImg.file_id) {
-            oldImages.push(oldImg);
-          }
-        }
-      });
-
-      // Yangi fayllarni qo'shamiz
-      newFiles.forEach((file) => {
-        formData.append("newImages", file);
-      });
-
-      // Eski rasmlarni JSON formatda yuboramiz
-      if (oldImages.length > 0) {
-        formData.append("oldImages", JSON.stringify(oldImages));
-      }
-
-      // O'chirilgan rasmlarni yuboramiz
-      if (data.deletedImages && data.deletedImages.length > 0) {
-        formData.append("deletedImages", JSON.stringify(data.deletedImages));
-      }
-    } else {
-      // Yaratish uchun - faqat yangi fayllar
-      (data.images || []).forEach((img) => {
-        if (img instanceof File) {
-          formData.append("images", img);
-        }
-      });
-    }
-
-    formData.append(
-      "discount",
-      JSON.stringify(data.discount || { price: 0, children: [] })
-    );
-    return formData;
-  };
-
   const createProduct = useCallback(async (data) => {
-    const formData = buildProductFormData(data, false);
-    const response = await api.post("/products", formData, {
+    const response = await api.post("/products", data, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
   }, []);
 
   const updateProduct = useCallback(async (id, data) => {
-    const formData = buildProductFormData(data, true);
-    const response = await api.patch(`/products/${id}`, formData, {
+    const response = await api.patch(`/products/${id}`, data, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
@@ -442,7 +306,6 @@ const Warehouse = () => {
         costPrice: Number(values.costPrice),
         salePrice: Number(values.salePrice),
         quantity: Number(values.quantity),
-        createdBy: user?._id,
         minQuantity: Number(values.minQuantity),
         unit: values.unit,
         description: values.description || "",
@@ -475,7 +338,6 @@ const Warehouse = () => {
       }
     },
     [
-      user?._id,
       editId,
       resetProduct,
       currentPage,
@@ -542,14 +404,12 @@ const Warehouse = () => {
     {
       key: "costPrice",
       title: "Tannarx",
-      render: (_, row) =>
-        `${Number(row.costPrice)?.toLocaleString()} ${row.currency}`,
+      render: (_, row) => `${Number(row.costPrice)?.toLocaleString()} so'm`,
     },
     {
       key: "salePrice",
       title: "Sotish narxi",
-      render: (_, row) =>
-        `${Number(row.salePrice)?.toLocaleString()} ${row.currency}`,
+      render: (_, row) => `${Number(row.salePrice)?.toLocaleString()} so'm`,
     },
 
     {
@@ -557,7 +417,7 @@ const Warehouse = () => {
       title: "Taxminiy 1 maxsulotdan foyda",
       render: (_, row) => {
         const profit = Number(row.salePrice) - Number(row.costPrice);
-        return `${profit?.toLocaleString()} ${row.currency}`;
+        return `${profit?.toLocaleString()} so'm`;
       },
     },
     {
@@ -567,7 +427,7 @@ const Warehouse = () => {
         const profit =
           (Number(row.salePrice) - Number(row.costPrice)) *
           Number(row.quantity);
-        return `${profit?.toLocaleString()} ${row.currency}`;
+        return `${profit?.toLocaleString()} so'm`;
       },
     },
     {
@@ -580,19 +440,9 @@ const Warehouse = () => {
       key: "totalCost",
       title: "Kapitali",
       render: (_, row) =>
-        `${(Number(row.costPrice) * Number(row.quantity))?.toLocaleString()} ${
-          row.currency
-        }`,
-    },
-    // {
-    //   key: "batch_number",
-    //   title: "Partiya raqami",
-    //   render: (_, row) => row.batch_number || "-",
-    // },
-    {
-      key: "createdBy",
-      title: "Yaratgan",
-      render: (_, row) => row.createdBy?.fullName || "-",
+        `${(
+          Number(row.costPrice) * Number(row.quantity)
+        )?.toLocaleString()} so'm`,
     },
     {
       key: "description",
@@ -716,155 +566,50 @@ const Warehouse = () => {
           </button>
         </div>
         <h1 className="title-page">Maxsulotlar</h1>
-        <div className="filters-container">
-          <Switch
-            checked={openFilter}
-            onChange={(checked) => {
-              setOpenFilter(checked);
-              if (!checked) {
-                setFilters({
-                  name: "",
-                  minCostPrice: "",
-                  maxCostPrice: "",
-                  minSalePrice: "",
-                  maxSalePrice: "",
-                  minQuantity: "",
-                  maxQuantity: "",
-                  unit: "",
-                });
-              }
-            }}
-            label={"Filtrlar"}
-          />
-        </div>
-        {openFilter ? (
-          <div className="filters-container" style={{ marginBottom: 16 }}>
-            {/* 1-Qator: Nomi, Partiya, Birlik */}
-            <div className="row-form">
-              <Input
-                label="Nomi"
-                placeholder="Mahsulot nomi"
-                value={filters.name}
-                onChange={(e) => handleNameFilterChange(e.target.value)}
-                style={{ minWidth: 120 }}
-              />
-              {/* <SearchSelect
-                label="Partiya"
-                options={[
-                  { label: "Barchasi", value: "" },
-                  ...batches.map((b) => ({
-                    label: b.batch_number,
-                    value: b.batch_number,
-                  })),
-                ]}
-                value={filters.batch_number}
-                onChange={(v) => setFilters((f) => ({ ...f, batch_number: v }))}
-                style={{ minWidth: 120 }}
-              /> */}
-              <SearchSelect
-                label="Birlik"
-                options={[
-                  { label: "Barchasi", value: "" },
-                  { label: "kg", value: "kg" },
-                  { label: "litr", value: "litr" },
-                  { label: "dona", value: "dona" },
-                ]}
-                value={filters.unit}
-                onChange={(v) => setFilters((f) => ({ ...f, unit: v }))}
-                style={{ minWidth: 100 }}
-              />
-            </div>
+        <div className="filters-container" style={{ marginBottom: 16 }}>
+          <div className="row-form">
+            <Input
+              label="Nomi"
+              placeholder="Mahsulot nomi"
+              value={filters.name}
+              onChange={(e) => handleNameFilterChange(e.target.value)}
+              style={{ minWidth: 120 }}
+            />
 
-            {/* 2-Qator: Narxlar */}
-            <div className="row-form">
-              <Input
-                label="Tannarx (min)"
-                type="number"
-                step="0.01"
-                value={filters.minCostPrice}
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, minCostPrice: e.target.value }))
-                }
-                style={{ minWidth: 100 }}
-              />
-              <Input
-                label="Tannarx (max)"
-                type="number"
-                step="0.01"
-                value={filters.maxCostPrice}
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, maxCostPrice: e.target.value }))
-                }
-                style={{ minWidth: 100 }}
-              />
-              <Input
-                label="Sotish narxi (min)"
-                type="number"
-                step="0.01"
-                value={filters.minSalePrice}
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, minSalePrice: e.target.value }))
-                }
-                style={{ minWidth: 100 }}
-              />
-              <Input
-                label="Sotish narxi (max)"
-                type="number"
-                step="0.01"
-                value={filters.maxSalePrice}
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, maxSalePrice: e.target.value }))
-                }
-                style={{ minWidth: 100 }}
-              />
-            </div>
+            <SearchSelect
+              label="Birlik"
+              options={[
+                { label: "Barchasi", value: "" },
+                { label: "kg", value: "kg" },
+                { label: "litr", value: "litr" },
+                { label: "dona", value: "dona" },
+              ]}
+              value={filters.unit}
+              onChange={(v) => setFilters((f) => ({ ...f, unit: v }))}
+              style={{ minWidth: 100 }}
+            />
+            <SearchSelect
+              label="Sotuvga qo'yilgan"
+              options={[
+                { label: "Barchasi", value: "" },
+                { label: "Ha", value: "true" },
+                { label: "Yo'q", value: "false" },
+              ]}
+              value={filters.isAvailable}
+              onChange={(v) => setFilters((f) => ({ ...f, isAvailable: v }))}
+              style={{ minWidth: 120 }}
+            />
 
-            {/* 3-Qator: Miqdor, valyuta, filial, sotuvga qo'yilgan va tozalash */}
-            <div className="row-form">
-              <Input
-                label="Miqdori (min)"
-                type="number"
-                step="0.01"
-                value={filters.minQuantity}
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, minQuantity: e.target.value }))
-                }
-                style={{ minWidth: 100 }}
-              />
-              <Input
-                label="Miqdori (max)"
-                type="number"
-                step="0.01"
-                value={filters.maxQuantity}
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, maxQuantity: e.target.value }))
-                }
-                style={{ minWidth: 100 }}
-              />
-
-              <SearchSelect
-                label="Sotuvga qo'yilgan"
-                options={[
-                  { label: "Barchasi", value: "" },
-                  { label: "Ha", value: "true" },
-                  { label: "Yo'q", value: "false" },
-                ]}
-                value={filters.isAvailable}
-                onChange={(v) => setFilters((f) => ({ ...f, isAvailable: v }))}
-                style={{ minWidth: 120 }}
-              />
-
-              <button
-                type="button"
-                className="btn secondary"
-                style={{ alignSelf: "flex-end", marginLeft: 8 }}
-                onClick={resetFilters}
-              >
-                Tozalash
-              </button>
-            </div>
+            <button
+              type="button"
+              className="btn secondary"
+              style={{ alignSelf: "flex-end", marginLeft: 8 }}
+              onClick={resetFilters}
+            >
+              Tozalash
+            </button>
           </div>
-        ) : null}
+        </div>
         <div style={{ marginBottom: 12 }}>
           <div className="filters-container">
             <Switch
